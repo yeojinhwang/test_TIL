@@ -154,3 +154,120 @@ Time:        0.91s, estimated 1s
 Ran all test suites.
 ```
 
+#### toBeTruthy(), toBeFalsy()
+
+- 숫자 `1`이 `true`로 간주되고, 숫자 `0`이 `false`로 간주되는 것과 같이 모든 타입의 값들을 `true` 아니면 `false`로 간주하는 규칙이 있다.
+  - `toBeTruthy()`는 검증 대상이 이 규칙에 따라 `true`로 간주되면 테스트 통과이고, `toBeFalsy()`는 반대로 `false`로 간주되는 경우 테스트가 통과된다.
+
+```javascript
+test('number 0 is falsy but string 0 is truthy', () => {
+	expect(0).toBeFalsy();
+	expect('0').toBeTruthy();
+});
+```
+
+#### toHaveLength(), toContain()
+
+- `toHaveLength()`는 배열의 길이를 체크할 때 쓰이고, `toContain()`은 특정 원소가 배열에 있는지를 테스트할 때 쓰인다.
+
+```javascript
+test('array', () => {
+    const colors = ['Red', 'Yellow', 'Blue'];
+    expect(colors).toHaveLength(3);
+    expect(colors).toContain('Yellow');
+    expect(colors).not.toContain('Green');
+});
+```
+
+- 어떤 Matcher 함수가 불만족하는지를 테스트할 때는 앞에 `not`을 붙여준다.
+
+#### toMatch()
+
+- 문자열의 경우에는 단순히 `toBe()`를 사용해서 문자열이 정확히 일치하는지를 체크한다.
+- 정규식 기반의 테스트가 필요할 때는 `toMatch()` 함수를 사용한다.
+
+```javascript
+test('string', () => {
+    expect(getUser(1).email).toBe('user1@test.com');
+    expect(getUser(2).email).toMatch(/.*test.com$/);
+});
+```
+
+#### toThrow()
+
+- 예외발생 여부를 테스트해야 할 때는 `toThrow()` 함수를 사용하면 된다.
+- `toThrow()` 함수는 인자로 받는데 문자열을 넘기면 예외 메세지를 비교하고 정규식을 넘기면 정규식 체크를 해준다.
+
+```javascript
+function getUser(id) {
+    if (id <= 0) throw new Error('Invalid ID');
+    return {
+        id,
+        email: 'user${id}@test.com'
+    };
+};
+```
+
+```javascript
+// 테스트 코드 작성
+test('throw when id is non negative', () => {
+    expect(getUser(-1)).toThrow();
+    expect(getUser(-1)).toThrow('Invalid ID');
+});
+```
+
+```bash
+$ npm test
+
+> my-jest@1.0.0 test /my-jest
+> jest
+
+ FAIL  ./test.js
+  ✕ throw when id is non negative (2ms)
+
+  ● throw when id is non negative
+
+    Invalid ID
+
+      1 | function getUser(id) {
+    > 2 |   if (id <= 0) throw Error('Invalid ID');
+        |                      ^
+      3 |   return {
+      4 |     id,
+      5 |     email: `user${id}@test.com`
+
+      at Error (test.js:2:22)
+      at Object.getUser (test.js:10:10)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        0.928s, estimated 1s
+Ran all test suites.
+npm ERR! Test failed.  See above for more details.
+```
+
+- `expect()` 함수에 넘기는 검증 대상을 함수로 한 번 감싸줘야 한다. 그렇지 않으면 예외 발생 여부를 체크하는 것이 아닌, 테스트 실행 도중 예외가 발생하여 테스트는 항상 실패하게 된다.
+
+```javascript
+test('throw when id is non negative', () => {
+    expect(() => getUser(-1).toThrow());
+    expect(() => getUser(-1).toThrow('Invalid ID'));
+})
+```
+
+```bash
+$ npm test
+
+> my-jest@1.0.0 test /my-jest
+> jest
+
+ PASS  ./test.js
+  ✓ throw when id is non negative (2ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        1.449s
+Ran all test suites.
+```
