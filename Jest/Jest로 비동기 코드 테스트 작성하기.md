@@ -130,3 +130,113 @@ Ran all test suites.
 
 - `fetchUser()` 함수를 호출할 때 인자를 `2`대신 다시 `1`을 넘기도록 코드를 수정하면 콜백 함수도 호출되면서 Jest는 모든 코드를 빠짐없이 실행하면서 테스트를 통과시킨다.
 
+#### 2. Promise 테스트
+
+```javascript
+function fetchUser(id) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            console.log('wait 0.1 sec.');
+            const user = {
+                id: id,
+                name: 'User' + id,
+                email: id + '@test.com'
+            };
+            resolve(user);
+        }, 100);
+    });
+}
+```
+
+- 인자로 콜백 함수를 받는 대신 0.1초를 기다렸다가 사용자 객체를 제공(resolve)하는 Promise 객체를 리턴한다.
+
+```javascript
+test('fetch a user', () => {
+    fetchUser(2).then(user => {
+        expect(user).toEqual({
+            id: 1,
+            name: 'User1',
+            email: '1@test.com'
+        });
+    });
+});
+```
+
+```bash
+$ npm test
+
+> my-jest@1.0.0 test /my-jest
+> jest
+
+ PASS  ./promise.test.js
+  ✓ fetch a user (1ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        0.766s, estimated 1s
+Ran all test suites.
+```
+
+- 실행 시간이 1ms이고, 콘솔에 `wait 0.1 sec.`도 출력되지 않아 `fetchUser()` 함수에서 리턴된 Promise 객체의 `then()` 메서드가 실행되지 않은 것을 알 수 있다.
+
+```javascript
+test('fetch a user', () => {
+    return fetchUser(2).then(user => { 
+        expect(user).toEqual({
+            id: 1,
+            name: 'User1',
+            email: '1@test.com'
+        });
+    });
+});
+```
+
+- `return`문을 추가하여 테스트 함수가 Promise를 리턴하면 Jest Runner는 리턴된 Promise가 resolve될 때까지 기다린다.
+
+```bash
+$ npm test
+
+> my-jest@1.0.0 test /my-jest
+> jest
+
+ FAIL  ./promise.test.js
+  ✕ fetch a user (117ms)
+
+  ● fetch a user
+
+    expect(received).toEqual(expected)
+
+    Difference:
+
+    - Expected
+    + Received
+
+      Object {
+    -   "email": "1@test.com",
+    -   "id": 1,
+    -   "name": "User1",
+    +   "email": "2@test.com",
+    +   "id": 2,
+    +   "name": "User2",
+      }
+
+      15 | test('fetch a user', () => {
+      16 |   return fetchUser(2).then(user => {
+    > 17 |     expect(user).toEqual({
+         |                  ^
+      18 |       id: 1,
+      19 |       name: 'User1',
+      20 |       email: '1@test.com'
+
+      at toEqual (promise.test.js:17:18)
+
+  console.log promise.test.js:4
+    wait 0.1 sec.
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        1.021s
+Ran all test suites.
+```
