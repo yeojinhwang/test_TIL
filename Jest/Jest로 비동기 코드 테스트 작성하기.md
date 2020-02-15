@@ -240,3 +240,96 @@ Snapshots:   0 total
 Time:        1.021s
 Ran all test suites.
 ```
+
+#### 3. Async/Await 테스트
+
+- 테스트 함수 맨 앞에 `async`를 추가하고, Promise를 리턴하는 함수 앞에 `await`을 붙이면 동기 코드처럼 보이는 테스트를 작성할 수 있다.
+
+```javascript
+test('fetch a user', async() => {
+    const user = await fetchUser(2);
+    expect(user).toEqual({
+        id: 1,
+        name: 'User1',
+        email: '1@test.com'
+    });
+});
+```
+
+```bash
+$ npm test
+
+> my-jest@1.0.0 test /my-jest
+> jest
+
+ FAIL  ./promise.test.js
+  ✕ fetch a user (114ms)
+
+  ● fetch a user
+
+    expect(received).toEqual(expected)
+
+    Difference:
+
+    - Expected
+    + Received
+
+      Object {
+    -   "email": "1@test.com",
+    -   "id": 1,
+    -   "name": "User1",
+    +   "email": "2@test.com",
+    +   "id": 2,
+    +   "name": "User2",
+      }
+
+      15 | test('fetch a user', async () => {
+      16 |   const user = await fetchUser(2);
+    > 17 |   expect(user).toEqual({
+         |                ^
+      18 |     id: 1,
+      19 |     name: 'User1',
+      20 |     email: '1@test.com'
+
+      at Object.toEqual (promise.test.js:17:16)
+
+  console.log promise.test.js:4
+    wait 0.1 sec.
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        0.997s, estimated 1s
+Ran all test suites.
+```
+
+```javascript
+test('fetch a user', async () => {
+  const user = await fetchUser(2);
+  expect(user).toEqual({
+    id: 2,
+    name: 'User2',
+    email: '2@test.com'
+  });
+});
+```
+
+```bash
+$ npm test
+
+> my-jest@1.0.0 test /my-jest
+> jest
+
+ PASS  ./promise.test.js
+  ✓ fetch a user (119ms)
+
+  console.log promise.test.js:4
+    wait 0.1 sec.
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        1.476s
+Ran all test suites.
+```
+
